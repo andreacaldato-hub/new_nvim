@@ -14,7 +14,6 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz", opts)
 vim.keymap.set("n", "<Tab>", ":bnext<CR>", opts)
 vim.keymap.set("n", "<S-Tab>", ":bprevious<CR>", opts)
 vim.keymap.set("n", "<leader>x", ":bd!<CR>", opts) -- close buffer
-vim.keymap.set("n", "<leader>b", "<cmd> enew <CR>", opts) -- new buffer
 -- tabs
 -- window management
 vim.keymap.set("n", "<leader>v", "<C-w>v", opts) -- split window vertically
@@ -111,3 +110,12 @@ function OpenTmuxSplit()
 end
 
 vim.api.nvim_set_keymap("n", "<leader>t", ":lua OpenTmuxSplit()<CR>", { noremap = true, silent = true })
+-- lua/user/utils.lua (or similar)
+vim.keymap.set("n", "<leader>b", function()
+  local filepath = vim.fn.expand("%:p")
+  if filepath:match("%.html$") then
+    vim.fn.jobstart({ "firefox", filepath }, { detach = true })
+  else
+    print("Not an HTML file.")
+  end
+end, { desc = "Open current HTML file in Firefox" })
