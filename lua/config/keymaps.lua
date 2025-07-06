@@ -111,11 +111,88 @@ end
 
 vim.api.nvim_set_keymap("n", "<leader>t", ":lua OpenTmuxSplit()<CR>", { noremap = true, silent = true })
 -- lua/user/utils.lua (or similar)
-vim.keymap.set("n", "<leader>b", function()
-  local filepath = vim.fn.expand("%:p")
-  if filepath:match("%.html$") then
-    vim.fn.jobstart({ "firefox", filepath }, { detach = true })
-  else
-    print("Not an HTML file.")
+--vim.keymap.set("n", "<leader>b", function()
+--  local filepath = vim.fn.expand("%:p")
+--  if filepath:match("%.html$") then
+--    vim.fn.jobstart({ "firefox", filepath }, { detach = true })
+--  else
+local map = vim.keymap.set
+local opts = { noremap = true, silent = true }
+
+-- Track running live servers
+local live_servers = {}
+
+-- Hash dir into unique port between 3000–3999
+local function get_port_from_dir(dir)
+  local hash = 0
+  for i = 1, #dir do
+    hash = (hash * 31 + dir:byte(i)) % 10000
   end
-end, { desc = "Open current HTML file in Firefox" })
+  return 3000 + (hash % 1000)
+end
+
+-- Check if file is within the directory
+local function is_file_in_dir(file, dir)
+  return vim.startswith(file, dir)
+end
+
+-- Start live-server for current file's dir
+map("n", "<leader>bs", function()
+  local dir = vim.fn.expand("%:p:h")
+  if live_servers[dir] then
+    print("Live server already running for: " .. dir)
+    return
+  end
+
+  local port = get_port_from_dir(dir)
+  live_servers[dir] = port
+
+  local cmd = {
+    "live-server",
+    "--port=" .. port,
+    "--quiet",
+    "--no-browser",
+  }
+
+  vim.fn.jobstart(cmd, {
+    cwd = dir,
+    detach = true,
+    on_exit = function()
+      live_servers[dir] = nil
+    end,
+  })
+
+  print("Live server started at http://localhost:" .. port)
+end, opts)
+
+-- Open current file with live server
+map("n", "<leader>b", function()
+  local file = vim.fn.expand("%:p")
+  local dir = vim.fn.expand("%:p:h")
+  local file_name = vim.fn.expand("%:t")
+
+  local port = live_servers[dir] or get_port_from_dir(dir)
+
+  if not is_file_in_dir(file, dir) then
+    print("File is not inside live server root: " .. dir)
+    return
+  end
+
+  local url = string.format("http://localhost:%d/%s", port, file_name)
+  vim.fn.jobstart({ "firefox", url }, { detach = true })
+end, opts)
+--    print("Not an HTML file.")
+map("n", "<leader>bx", function()
+  local dir = vim.fn.expand("%:p:h")
+  local port = live_servers[dir]
+  if not port then
+    print("No live server running for this directory.")
+    return
+  end
+  vim.fn.jobstart({ "pkill", "-f", "live-server.*" .. port }, {
+    on_exit = function()
+      print("Stopped live server on port " .. port)
+      live_servers[dir] = nil
+    end,
+  })
+end, opts)
