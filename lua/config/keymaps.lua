@@ -81,8 +81,14 @@ vim.api.nvim_set_keymap(
 )
 vim.api.nvim_set_keymap(
   "n",
+  "<leader>fh",
+  ":lua require('telescope.builtin').find_files({cwd='~/.config/hypr'})<CR>",
+  { noremap = true, silent = true }
+)
+vim.api.nvim_set_keymap(
+  "n",
   "<leader>fc",
-  ":lua require('telescope.builtin').find_files({cwd='~/.config'})<CR>",
+  ":lua require('telescope.builtin').find_files({cwd='~/.config/'})<CR>",
   { noremap = true, silent = true }
 )
 vim.api.nvim_set_keymap(
