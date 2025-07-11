@@ -202,3 +202,57 @@ map("n", "<leader>bx", function()
     end,
   })
 end, opts)
+-- Show currently running live servers
+map("n", "<leader>bl", function()
+  local count = 0
+  for dir, port in pairs(live_servers) do
+    print("🟢 " .. dir .. " → http://localhost:" .. port)
+    count = count + 1
+  end
+  if count == 0 then
+    print("No live servers running.")
+  else
+    print(count .. " live server(s) running.")
+  end
+end, opts)
+
+-- Kill all running live servers
+map("n", "<leader>bk", function()
+  local count = 0
+  for dir, port in pairs(live_servers) do
+    vim.fn.jobstart({ "pkill", "-f", "live-server.*" .. port }, {
+      on_exit = function()
+        print("🛑 Stopped live server on port " .. port)
+      end,
+    })
+    live_servers[dir] = nil
+    count = count + 1
+  end
+  if count == 0 then
+    print("No live servers were running.")
+  else
+    print("Killed " .. count .. " live server(s).")
+  end
+end, opts)
+-- Auto-disable autoindent when pasting
+vim.api.nvim_create_autocmd("TextYankPost", {
+  pattern = "*",
+  callback = function()
+    vim.opt.paste = false
+  end,
+})
+
+-- Remap `p` and `P` to paste in 'paste' mode temporarily
+vim.keymap.set("n", "p", function()
+  local paste = vim.opt.paste:get()
+  vim.opt.paste = true
+  vim.api.nvim_feedkeys("p", "n", true)
+  vim.opt.paste = paste
+end, { noremap = true, silent = true })
+
+vim.keymap.set("n", "P", function()
+  local paste = vim.opt.paste:get()
+  vim.opt.paste = true
+  vim.api.nvim_feedkeys("P", "n", true)
+  vim.opt.paste = paste
+end, { noremap = true, silent = true })
