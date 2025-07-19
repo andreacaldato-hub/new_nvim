@@ -50,4 +50,3 @@ vim.api.nvim_create_user_command("LatexBuild", function()
   vim.fn.system("kitty --detach zathura " .. pdf_file)
 end, {})
 -- Function to compile and open PDF in vertical split
-vim.env.PATH = vim.env.PATH .. ":/usr/local/bin" -- Adjust the path to where chktex is installed

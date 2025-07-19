@@ -256,3 +256,25 @@ vim.keymap.set("n", "P", function()
   vim.api.nvim_feedkeys("P", "n", true)
   vim.opt.paste = paste
 end, { noremap = true, silent = true })
+vim.api.nvim_create_autocmd("BufEnter", {
+  callback = function()
+    local file = vim.fn.expand("%:p")
+    if file == "" or vim.fn.filereadable(file) == 0 then
+      return
+    end
+
+    local file_dir = vim.fn.fnamemodify(file, ":h")
+    local git_root = vim.fn.systemlist("git -C " .. vim.fn.shellescape(file_dir) .. " rev-parse --show-toplevel")[1]
+    local branch = vim.fn.systemlist("git -C " .. vim.fn.shellescape(file_dir) .. " rev-parse --abbrev-ref HEAD")[1]
+
+    if vim.v.shell_error == 0 and git_root ~= nil and branch ~= nil then
+      local repo = vim.fn.fnamemodify(git_root, ":t")
+      local git_info = " " .. repo .. ":" .. branch
+      os.execute("tmux set-option -gq @nvim_git_info '" .. git_info .. "'")
+    else
+      os.execute("tmux set-option -gq @nvim_git_info ''")
+    end
+  end,
+})
+
+-- Define the function globally (no require needed)
