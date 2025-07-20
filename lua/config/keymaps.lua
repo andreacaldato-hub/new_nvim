@@ -278,3 +278,12 @@ vim.api.nvim_create_autocmd("BufEnter", {
 })
 
 -- Define the function globally (no require needed)
+--
+-- Tell vim-tmux-navigator NOT to create default keymaps (so you can set your own)
+vim.g.tmux_navigator_no_mappings = 1
+
+-- Map Ctrl + h/j/k/l to navigate between tmux panes or vim splits
+vim.keymap.set("n", "<C-h>", ":TmuxNavigateLeft<CR>", { silent = true })
+vim.keymap.set("n", "<C-j>", ":TmuxNavigateDown<CR>", { silent = true })
+vim.keymap.set("n", "<C-k>", ":TmuxNavigateUp<CR>", { silent = true })
+vim.keymap.set("n", "<C-l>", ":TmuxNavigateRight<CR>", { silent = true })
