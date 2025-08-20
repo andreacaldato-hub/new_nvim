@@ -264,19 +264,26 @@ vim.api.nvim_create_autocmd("BufEnter", {
     end
 
     local file_dir = vim.fn.fnamemodify(file, ":h")
-    local git_root = vim.fn.systemlist("git -C " .. vim.fn.shellescape(file_dir) .. " rev-parse --show-toplevel")[1]
-    local branch = vim.fn.systemlist("git -C " .. vim.fn.shellescape(file_dir) .. " rev-parse --abbrev-ref HEAD")[1]
 
-    if vim.v.shell_error == 0 and git_root ~= nil and branch ~= nil then
-      local repo = vim.fn.fnamemodify(git_root, ":t")
-      local git_info = " " .. repo .. ":" .. branch
-      os.execute("tmux set-option -gq @nvim_git_info '" .. git_info .. "'")
-    else
-      os.execute("tmux set-option -gq @nvim_git_info ''")
+    -- get repo + branch cleanly
+    local git_root_tbl = vim.fn.systemlist({ "git", "-C", file_dir, "rev-parse", "--show-toplevel" })
+    local branch_tbl = vim.fn.systemlist({ "git", "-C", file_dir, "rev-parse", "--abbrev-ref", "HEAD" })
+
+    if vim.v.shell_error ~= 0 or #git_root_tbl == 0 or #branch_tbl == 0 then
+      vim.fn.system({ "tmux", "set-option", "-gq", "@nvim_git_info", "" })
+      return
     end
+
+    local git_root = vim.fn.trim(git_root_tbl[1])
+    local branch = vim.fn.trim(branch_tbl[1])
+    local repo = vim.fn.fnamemodify(git_root, ":t")
+
+    local git_info = string.format(" %s:%s", repo, branch)
+
+    -- write cleanly to tmux
+    vim.fn.system({ "tmux", "set-option", "-gq", "@nvim_git_info", git_info })
   end,
 })
-
 -- Define the function globally (no require needed)
 --
 -- Tell vim-tmux-navigator NOT to create default keymaps (so you can set your own)
