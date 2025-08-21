@@ -2,7 +2,15 @@
 vim.keymap.set({ "n", "v" }, "<Space>", "<Nop>", { silent = true })
 local opts = { noremap = true, silent = true }
 
---save filg
+-- Normal paste (keep defaults, but we set explicitly)
+vim.keymap.set("n", "P", "P")
+vim.keymap.set({ "n", "v" }, "d", '"_d')
+vim.keymap.set({ "n", "v" }, "D", '"_D')
+vim.keymap.set({ "n", "v" }, "x", '"_x')
+vim.keymap.set({ "n", "v" }, "X", '"_X')
+vim.keymap.set({ "n", "v" }, "c", '"_c')
+vim.keymap.set({ "n", "v" }, "C", '"_C')
+
 vim.keymap.set("n", "<C-s>", "<cmd> w <CR>", opts)
 vim.keymap.set("n", "x", '"_x', opts)
 vim.keymap.set("n", "n", "nzzzv", opts)
