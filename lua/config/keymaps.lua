@@ -45,6 +45,7 @@ vim.keymap.set("v", "<", "<gv", opts)
 vim.keymap.set("v", ">", ">gv", opts)
 -- Keep last yanked when pasting
 vim.keymap.set("v", "p", '"_dP', opts)
+vim.keymap.set({ "n", "v" }, "x", "d", { noremap = true })
 
 vim.api.nvim_set_keymap("t", "<leader>q", "<C-\\><C-n>:q<CR>", { noremap = true, silent = true })
 
@@ -302,3 +303,9 @@ vim.keymap.set("n", "<C-h>", ":TmuxNavigateLeft<CR>", { silent = true })
 vim.keymap.set("n", "<C-j>", ":TmuxNavigateDown<CR>", { silent = true })
 vim.keymap.set("n", "<C-k>", ":TmuxNavigateUp<CR>", { silent = true })
 vim.keymap.set("n", "<C-l>", ":TmuxNavigateRight<CR>", { silent = true })
+vim.keymap.set(
+  "n",
+  "<leader>r",
+  ":silent !riscv64-elf-gcc -nostdlib -nostartfiles -o %:r.elf % && qemu-riscv64 %:r.elf<CR>",
+  { noremap = true, silent = true }
+)
